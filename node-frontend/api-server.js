@@ -6,7 +6,7 @@ server.use(restify.queryParser());
 server.use(restify.bodyParser());
 
 server.get('/api/user/:userid', function(req, res, next){
-    if(!req.header('auth')){
+    if(!req.header('x-auth')){
         return next(new Error("Unfortunately, you are not authorized"));
     }
 
@@ -24,6 +24,9 @@ server.get('/api/user/:userid', function(req, res, next){
 //PUT Updates a resource
 server.put('/api/user/:userid', function(req, res, next){
     //TODO: Add authentication
+    if(!req.header('x-auth')){
+        return next(new Error("Unfortunately, you are not authorized"));
+    }
     //TODO: Add reading of feed to add
     res.json(200, {'msg': "Your feed has been added", 'feedid': 1});
     return next();
