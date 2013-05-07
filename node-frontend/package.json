@@ -11,6 +11,7 @@
   "license": "BSD",
   "dependencies": {
     "trumpet": "~0.3.1",
-    "restify": "~2.3.5"
+    "restify": "~2.3.5",
+    "filed": "0.0.7"
   }
 }
