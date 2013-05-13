@@ -1,0 +1,41 @@
+CREATE TABLE "feeds" (
+    "feed_id"  SERIAL ,
+    "feed_title" VARCHAR(255) NOT NULL DEFAULT 'NULL' ,
+    "feed_url" VARCHAR(255) ,
+    "feed_ttl" INTEGER ,
+    PRIMARY KEY ("feed_id")
+);
+
+CREATE TABLE "entries" (
+    "entry_id"  SERIAL ,
+    "feed_id" INTEGER NOT NULL ,
+    "entry_published" TIMESTAMP ,
+    "entry_title" TEXT ,
+    "entry_author" VARCHAR(255) ,
+    PRIMARY KEY ("entry_id")
+);
+
+CREATE TABLE "users" (
+    "id"  SERIAL ,
+    "username" VARCHAR(255) ,
+    "user_ext_id" INTEGER ,
+    PRIMARY KEY ("id")
+);
+
+CREATE TABLE "users_feeds" (
+    "feed_id_feeds" INTEGER ,
+    "id_users" INTEGER ,
+);
+
+CREATE TABLE "read" (
+    "entry_id_entries" INTEGER ,
+    "id_users" INTEGER ,
+);
+
+ALTER TABLE "entries" ADD FOREIGN KEY ("feed_id") REFERENCES "feeds" ("feed_id");
+ALTER TABLE "users_feeds" ADD FOREIGN KEY ("feed_id_feeds") REFERENCES "feeds" ("feed_id");
+ALTER TABLE "users_feeds" ADD FOREIGN KEY ("id_users") REFERENCES "users" ("id");
+ALTER TABLE "read" ADD FOREIGN KEY ("entry_id_entries") REFERENCES "entries" ("entry_id");
+ALTER TABLE "read" ADD FOREIGN KEY ("id_users") REFERENCES "users" ("id");
+
+
