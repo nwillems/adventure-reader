@@ -19,16 +19,16 @@ printer = pprint.PrettyPrinter(depth = 1)
 logging.basicConfig(filename=log_file, level=log_level, format=log_format, \
     datefmt=log_datefmt)
 
-def log(blogid, start):
+#def log(blogid, start):
     #con = sqlite3.connect(db_file)
     #conn = psycopg2.connect(database="test", user="postgres", password="secret")
-    con = psycopg.connect(db_file)
-    c = con.cursor()
-    c.execute(
-        "INSERT INTO logs(blog_id, log_start, log_end) VALUES(?,?,?)",
-        (blogid, start, int(time())))
-    con.commit()
-    c.close()
+#    con = psycopg.connect(db_file)
+#    c = con.cursor()
+#    c.execute(
+#        "INSERT INTO logs(blog_id, log_start, log_end) VALUES(?,?,?)",
+#        (blogid, start, int(time())))
+#    con.commit()
+#    c.close()
 
 def mkDate(published_parsed):
     year, month, day, hour, minute, second, dayOfWeek, dayOfYear, dstFlag = published_parsed
@@ -42,16 +42,15 @@ def importBlog(blogid, feed_url, con):
     logging.info("Loading: %s; #entries: %s", feed_url, str(len(entries)))
     c = con.cursor()
     entries_simple = [(item['id'], mkDate(item['published_parsed']), 
-        item['title'], item['author'], item[False], blogid) for item in entries]
+        item['title'], item['author'], blogid) for item in entries]
 
     c.executemany("""INSERT INTO entries(
         entry_id, 
         entry_published,
         entry_title,
         entry_author,
-        entry_read,      # is read?
-        blog_id
-        ) VALUES ( ?, ?, ?, ?, false, ? );""", entries_simple)
+        feed_id
+        ) VALUES ( ?, ?, ?, ?, ? );""", entries_simple)
 
     con.commit()
     c.close()

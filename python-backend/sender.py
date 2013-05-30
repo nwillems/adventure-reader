@@ -16,4 +16,4 @@ def send(msg_body):
     channel.close()
     connection.close()
 
-send("Test besked")
+send("Nicolai er dum")

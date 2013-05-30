@@ -24,12 +24,12 @@ CREATE TABLE "users" (
 
 CREATE TABLE "users_feeds" (
     "feed_id_feeds" INTEGER ,
-    "id_users" INTEGER ,
+    "id_users" INTEGER
 );
 
 CREATE TABLE "read" (
     "entry_id_entries" INTEGER ,
-    "id_users" INTEGER ,
+    "id_users" INTEGER
 );
 
 ALTER TABLE "entries" ADD FOREIGN KEY ("feed_id") REFERENCES "feeds" ("feed_id");
