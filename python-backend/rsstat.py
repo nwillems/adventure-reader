@@ -35,6 +35,24 @@ def mkDate(published_parsed):
     return "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d" % \
         {"year":year, "month":month, "day":day, "hour":hour, "minute":minute, "second":second}
 
+def feed_url_to_id(feed_url):
+    """
+    Lookup a feed url and return its ID from the database
+    """
+    print("feed_url_to_id: NOT IMPLEMENTED")
+
+
+def save_feed_entries(feed_id, entries):
+    """
+    Stores the given list of entries in the database
+
+    Arguments:
+    * feed_id - id of the feed to store the entries under
+    * entries - a list of feed entries 
+    """
+
+    print("save_feed_entries: NOT IMPLEMENTED")
+
 def importBlog(blogid, feed_url, con):
     feed = feedparser.parse(feed_url)
     entries = feed['entries']
