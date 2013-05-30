@@ -1,0 +1,11 @@
+http://chillems.blogspot.com/feeds/posts/default
+http://www.version2.dk/it-nyheder/rss
+http://digg.com/rss/top.rss
+http://www.collectorsweekly.com/articles/feed/
+http://feeds.gawker.com/gizmodo/full
+http://www.dailymail.co.uk/news/index.rss
+http://feeds.feedburner.com/EaterNational
+http://winsupersite.com/rss.xml
+http://rss.sciam.com/ScientificAmerican-Global
+http://popsci.com/rss.xml
+
