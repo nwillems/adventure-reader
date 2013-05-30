@@ -4,8 +4,9 @@ import feedparser
 import sqlite3
 import pprint
 import logging
-import psycopg #might need psycopg2
 from time import time
+
+import db
 
 # ========= CONFIGURATION =========
 db_file =  "/home/nwillems/rsstat/rsstat.sqlite"
@@ -19,7 +20,8 @@ printer = pprint.PrettyPrinter(depth = 1)
 logging.basicConfig(filename=log_file, level=log_level, format=log_format, \
     datefmt=log_datefmt)
 
-#def log(blogid, start):
+def log(blogid, start):
+    print "Nothing"
     #con = sqlite3.connect(db_file)
     #conn = psycopg2.connect(database="test", user="postgres", password="secret")
 #    con = psycopg.connect(db_file)
@@ -35,14 +37,7 @@ def mkDate(published_parsed):
     return "%(year)04d-%(month)02d-%(day)02d %(hour)02d:%(minute)02d:%(second)02d" % \
         {"year":year, "month":month, "day":day, "hour":hour, "minute":minute, "second":second}
 
-def feed_url_to_id(feed_url):
-    """
-    Lookup a feed url and return its ID from the database
-    """
-    print("feed_url_to_id: NOT IMPLEMENTED")
-
-
-def save_feed_entries(feed_id, entries):
+def save_feed_entries(entries):
     """
     Stores the given list of entries in the database
 
@@ -50,28 +45,30 @@ def save_feed_entries(feed_id, entries):
     * feed_id - id of the feed to store the entries under
     * entries - a list of feed entries 
     """
+    cursor = db.get_cursor(db.get_connection())
 
-    print("save_feed_entries: NOT IMPLEMENTED")
-
-def importBlog(blogid, feed_url, con):
-    feed = feedparser.parse(feed_url)
-    entries = feed['entries']
-
-    logging.info("Loading: %s; #entries: %s", feed_url, str(len(entries)))
-    c = con.cursor()
-    entries_simple = [(item['id'], mkDate(item['published_parsed']), 
-        item['title'], item['author'], blogid) for item in entries]
-
-    c.executemany("""INSERT INTO entries(
+    cursor.executemany("""INSERT INTO entries(
         entry_id, 
         entry_published,
         entry_title,
         entry_author,
         feed_id
-        ) VALUES ( ?, ?, ?, ?, ? );""", entries_simple)
+        ) VALUES ( %s, %s, %s, %s, %s );""", entries)
 
-    con.commit()
-    c.close()
+    cursor.connection.commit()
+
+    return True
+
+def fetch_feed(feed_url, feed_id):
+    feed = feedparser.parse(feed_url)
+    entries = feed['entries']
+
+    logging.info("Loading: %s; #entries: %s", feed_url, str(len(entries)))
+    entries_simple = [(item['id'], mkDate(item['published_parsed']), 
+        item['title'], item['author'], feed_id) for item in entries]
+
+    return entries_simple
+
 
 def getFeedInfo(feed_url):
     feed = feedparser.parse(feed_url).feed
@@ -105,8 +102,9 @@ def main():
 
         for blog in blogs:
             start = int(time())
-            importBlog(blog[0], blog[1], conn)
-            log(blog[0], start)
+            entries = fetch_feed(blog[1], blog[0])
+            save_feed_entries(entries)
+            # log(blog[0], start)
 
 
 if __name__ == "__main__":
