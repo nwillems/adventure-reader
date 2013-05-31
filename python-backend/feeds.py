@@ -1,10 +1,10 @@
 #! /usr/bin/env python3
 import sys
-import feedparser
-import sqlite3
 import pprint
 import logging
 from time import time
+
+import feedparser
 
 import db
 
