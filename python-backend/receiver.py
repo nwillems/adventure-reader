@@ -1,9 +1,18 @@
 import sys
-import amqp
+import json
 from functools import partial
+
+import amqp
+
+import feeds
 
 def callback(channel, msg):
     print ("received: %s" % msg.body)
+    feed_info = json.loads(msg.body)
+
+    entries = feeds.fetch_feed(feed_info.url, feed_info.id)
+    feeds.save_feed_entries(entries)
+
     channel.basic_ack(msg.delivery_tag)
 
 def work():
