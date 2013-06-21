@@ -35,9 +35,11 @@ def queue_feed(feed_id, feed_url):
     con.close()
     return True
 
-def schedule_queue_feed(feed_id, feed_url, feed_ttl):
+def schedule_queue_feed(feed_id, feed_url, feed_ttl, scheduler):
     queue_feed(feed_id, feed_url)
-    # PUT BACK IN SCHEDULER
+    scheduler.enter(feed_ttl, 1,
+                    schedule_queue_feed,
+                    (feed_id, feed_url, feed_ttl, scheduler))
     return True
 
 def get_feeds():
