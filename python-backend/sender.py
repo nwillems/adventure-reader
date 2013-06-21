@@ -35,7 +35,10 @@ def queue_feed(feed_id, feed_url):
     con.close()
     return True
 
-def schedule_queue_feed(feed_id, feed_url, feed_ttl, scheduler):
+def schedule_queue_feed(feed_info, scheduler):
+    feed_id  = feed_info[0]
+    feed_url = feed_info[1]
+    feed_ttl = feed_info[2]
     queue_feed(feed_id, feed_url)
     scheduler.enter(feed_ttl, 1,
                     schedule_queue_feed,
@@ -103,6 +106,8 @@ def main():
         print("Starting scheduler")
         # Create scheduler
         scheduler = sched.scheduler(time.time, time.sleep)
+        for feed_info in get_feeds():
+            schedule_queue_feed(feed_info, scheduler)
         # Read feeds from DB
         # Queue feeds imdediately
         # Start scheduler
