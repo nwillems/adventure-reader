@@ -4,14 +4,15 @@ from functools import partial
 
 import amqp
 
-import feeds
+import conf
+import rss_fetcher 
 
 def callback(channel, msg):
     print ("received: %s" % msg.body)
-    feed_info = json.loads(msg.body)
+    feed_info = json.loads(str(msg.body))
 
-    entries = feeds.fetch_feed(feed_info.url, feed_info.id)
-    feeds.save_feed_entries(entries)
+    entries = rss_fetcher.fetch_feed(feed_info['url'], feed_info['id'])
+    rss_fetcher.save_feed_entries(entries)
 
     channel.basic_ack(msg.delivery_tag)
 

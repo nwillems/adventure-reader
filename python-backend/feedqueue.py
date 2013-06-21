@@ -6,7 +6,7 @@ import json
 
 import amqp
 
-# from conf import QUEUE_*
+import conf
 import db
 
 """
@@ -21,14 +21,54 @@ def queue_feed(feed_id, feed_url):
     """
 
     feed_info = {'id': feed_id, 'url': feed_url }
-    msg = json.dumps(feed_info)
+    msg_text = json.dumps(feed_info)
     # Put msg in Queue
+    con = amqp.Connection(conf.QUEUE_HOST, userid=conf.QUEUE_USER,
+        password=conf.QUEUE_PASSWORD, ssl=conf.QUEUE_SSL)
+
+    channel = con.channel()
+    msg = amqp.Message(msg_text, content_type="text/plain")
+
+    channel.basic_publish(msg, exchange='', routing_key='tester')
+
+    channel.close()
+    con.close()
     return True
 
 def schedule_queue_feed(feed_id, feed_url, feed_ttl):
     queue_feed(feed_id, feed_url)
     # PUT BACK IN SCHEDULER
     return True
+
+def get_feeds():
+    con = db.get_connection()
+    c = con.cursor()
+
+    c.execute("SELECT feed_id, feed_url, feed_ttl FROM feeds;")
+    feeds = c.fetchall()
+
+    # Apparently recommended
+    con.commit()
+
+    c.close()
+    con.close()
+
+    return feeds
+
+def get_feed_by_id(id):
+    con = db.get_connection()
+    c = con.cursor()
+
+    c.execute("SELECT feed_id, feed_url FROM feeds WHERE feed_id=%s;", (id,))
+    feed = c.fetchone()
+
+    # Apparently recommended
+    con.commit()
+
+    c.close()
+    con.close()
+
+    return feed
 
 def main():
     """
@@ -41,15 +81,26 @@ def main():
     parser = argparse.ArgumentParser(description="Schedule feeds in the queue")
     parser.add_argument('--feed', dest='feed', default=None, 
                         help='A feed to queue imediately')
+    parser.add_argument('--list', action='store_true', default=None,
+                        help='List available feeds')
 
     args = parser.parse_args()
 
-    if(not args.feed): # Single feed scheduling
+    if(args.feed): # Single feed scheduling
         print("Scheduling single feed")
         # Fetch feed info from DB
+        feed_id, feed_url = get_feed_by_id(int(args.feed))
         # Queue feed
+        queue_feed(feed_id, feed_url)
+    elif(args.list):
+        print("Listing feeds(ID - url)")
+        for feed in get_feeds():
+            id, url,_ = feed
+            print("%s - %s" % (id, url))
     else:
+        print("Starting shceduler")
         # Create scheduler
+        scheduler = sched.scheduler(time.time, time.sleep)
         # Read feeds from DB
         # Queue feeds imdediately
         # Start scheduler

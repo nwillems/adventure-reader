@@ -9,8 +9,7 @@ import feedparser
 import db
 
 # ========= CONFIGURATION =========
-db_file =  "/home/nwillems/rsstat/rsstat.sqlite"
-log_file = "/home/nwillems/rsstat/log_rsstat.log"
+log_file = "./log_rsstat.log"
 log_level = logging.INFO
 log_format = "%(asctime)s - %(levelname)s: %(message)s"
 log_datefmt = "%Y-%m-%d %H:%M:%S"
@@ -21,7 +20,9 @@ logging.basicConfig(filename=log_file, level=log_level, format=log_format, \
     datefmt=log_datefmt)
 
 def log(blogid, start):
-    print "Nothing"
+    print("Nothing")
+    return False
+
     #con = sqlite3.connect(db_file)
     #conn = psycopg2.connect(database="test", user="postgres", password="secret")
 #    con = psycopg.connect(db_file)
@@ -48,7 +49,7 @@ def save_feed_entries(entries):
     cursor = db.get_cursor(db.get_connection())
 
     cursor.executemany("""INSERT INTO entries(
-        entry_id, 
+        item_id, 
         entry_published,
         entry_title,
         entry_author,

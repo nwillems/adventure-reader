@@ -6,6 +6,7 @@ from conf import DB_HOST, DB_USER, DB_PASSWORD, DB_DATABASE
 _connection = None
 
 def get_connection():
+    global _connection
     if not _connection:
         _connection = psycopg2.connect(
             database=DB_DATABASE,
