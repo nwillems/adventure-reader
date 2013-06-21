@@ -100,7 +100,7 @@ def main():
             id, url,_ = feed
             print("%s - %s" % (id, url))
     else:
-        print("Starting shceduler")
+        print("Starting scheduler")
         # Create scheduler
         scheduler = sched.scheduler(time.time, time.sleep)
         # Read feeds from DB
