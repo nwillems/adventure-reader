@@ -11,19 +11,20 @@ function typeIsFeed(type){
         || type === 'application/rdf+xml';
 }
 
-tr.select('link', function(node){
-    if(node.attributes.rel && node.attributes.rel !== 'alternate')
+tr.selectAll('link', function(node){
+    if(node.attributes.REL && node.attributes.REL !== 'alternate')
         return null;
-    if(node.attributes.type && !typeIsFeed(node.attributes.type))
+    if(node.attributes.TYPE && !typeIsFeed(node.attributes.TYPE))
         return null;
 
     //All good now ready
-    feeds.push({ href : node.attributes.href, type: node.attributes.type });
-    getInfo(node.attributes.href);
+    feeds.push({ href : node.attributes.HREF, type: node.attributes.TYPE });
+    console.log(node.attributes);
+    getInfo(node.attributes.HREF);
 });
 
 function getFeed(url){
-    console.log("Fetching feed for:", url);
+    console.log("Fetching site for:", url);
     var req = http.get(url, function(res){
         res.pipe(tr);
     }).on('error', function(){
@@ -41,6 +42,7 @@ setTimeout(function(){
 */
 
 function getInfo(rssurl){
+    console.log("Fetching feed for:", rssurl);
     var req = http.get(rssurl, function(res){
 	res.pipe(rss_tr);
     }).on('error', function(){
@@ -49,6 +51,7 @@ function getInfo(rssurl){
 }
 
 rss_tr.selectAll('channel > title', function(node){
+    console.log("Title for feed:");
     node.createReadStream().pipe(process.stdout);
     //console.log(node);
 })
@@ -56,5 +59,4 @@ rss_tr.selectAll('channel > title', function(node){
 /*
 tr.select('div > a', function(node){
     node.createReadStream().pipe(process.stdout);
-})
-*/
+})*/
