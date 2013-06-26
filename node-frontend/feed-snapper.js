@@ -2,6 +2,7 @@ var trumpet = require('trumpet');
 var http = require('http');
 
 var tr = trumpet();
+var rss_tr = trumpet();
 var feeds = [];
 
 function typeIsFeed(type){
@@ -18,6 +19,7 @@ tr.select('link', function(node){
 
     //All good now ready
     feeds.push({ href : node.attributes.href, type: node.attributes.type });
+    getInfo(node.attributes.href);
 });
 
 function getFeed(url){
@@ -32,7 +34,27 @@ function getFeed(url){
 for(var i = 2; i < process.argv.length; i++)
     getFeed(process.argv[i]);
 
-
+/*
 setTimeout(function(){
-    console.log('Feeds fetched after 1 minutes:', feeds);
-}, 60000);
+    console.log('Feeds fetched after 10 sec:', feeds);
+}, 1000);
+*/
+
+function getInfo(rssurl){
+    var req = http.get(rssurl, function(res){
+	res.pipe(rss_tr);
+    }).on('error', function(){
+	console.log("Request error: ", arguments);
+    });
+}
+
+rss_tr.selectAll('channel > title', function(node){
+    node.createReadStream().pipe(process.stdout);
+    //console.log(node);
+})
+
+/*
+tr.select('div > a', function(node){
+    node.createReadStream().pipe(process.stdout);
+})
+*/
