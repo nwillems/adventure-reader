@@ -41,7 +41,7 @@ Feed.prototype.getMultiple = function(ids, callback){
     q.once('end', end);
 
     q.once('error', function(err){
-        q.removeListener('end', end);
+        q.removeAllListeners('end');
         return callback(err, null);
     });
 };
