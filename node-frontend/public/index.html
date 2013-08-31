@@ -5,25 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <!-- Bootstrap -->
     <link href="css/bootstrap.css" rel="stylesheet" media="screen" />
-<style>
-body {
-    padding-top: 60px;
-}
-.menu-slide {
-    /*background-color: #f5f5f5;*/
-}
-#feeds { 
-    /* background-color: #F00; */
-}
-#feed-pane { 
-    /* background-color: #0F0; */
-}
-.article-container{
-    border-bottom: 1px dotted #ddd;
-    margin-top: 20px;
-}
-</style>
     <link href="css/bootstrap-responsive.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
 </head>
 <body>
 <div class="navbar navbar-fixed-top">
@@ -38,105 +21,41 @@ body {
     </div>
     </div>
 </div>
+
 <div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span3">
-            <div class="row-fluid"><div class="span12 well">
-            <ul class="nav nav-list" id="feeds">
-                <li><a href="#addFeed">Add feed</a></li>
-                <li><a href="#0">Feed 0</a></li>
-                <li><a href="#1">Feed 1</a></li>
-                <li><a href="#2">Feed 2</a></li>
-                <li><a href="#3">Feed 3</a></li>
-                <li><a href="#4">Feed 4</a></li>
+<div class="row-fluid">
+    <div class="span3">
+        <div class="row-fluid">
+        <div class="span12 well">
+            <button data-href="#addFeed">Add feed</button>
+            <ul class="nav nav-list" id="feeds" data-bind="foreach: feeds">
+                <li><a 
+                    data-bind="text: title, attr: { href: link }, click: $root.selectFeed" 
+                    href="#0">Feed 0</a>
+                </li>
             </ul>
-            </div>
-            </div>
         </div>
-        <div class="span9" id="feed-pane">
-            <div class="span12"><h2>Feed title</h2></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
-            <div class="row-fluid article-container"><div class="span12">
-                <blockquote>
-                    <p>Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
-                    </small>
-                </blockquote>
-            </div></div>
         </div>
     </div>
+    <div class="span9" id="feed-pane">
+        <div class="span12">
+            <h2 data-bind="text: currentFeed().title">Feed title</h2>
+        </div>
+        
+        <div data-bind="foreach: currentFeed().entries">
+            <div class="row-fluid article-container">
+            <div class="span12">
+                <blockquote>
+                    <p data-bind="text: entry_title">Article title</p>
+                    <small>Date of post | 
+                        <cite title="Autho">Name of author</cite>
+                    </small>
+                </blockquote>
+            </div>
+            </div>
+        </div>
+    </div>
+</div>
 </div>
 
 <div id="loginModal" class="modal hide fade">
@@ -168,61 +87,18 @@ body {
     </div>
 </script>
 
-<script src="http://code.jquery.com/jquery.js"></script>
-<script src="components/bootstrap.min.js"></script>
-<script src="components/underscore.js"></script>
-<script src="components/backbone.js"></script>
-<script src="js/model/model.js"></script>
-<script src="js/views/views.js"></script>
-<script src="js/app.js"></script>
+<script src="components/jquery.js"></script>
+<script src="components/bootstrap.js"></script>
+<script src="components/knockout.js"></script>
 
 <script>
-(function() {
-    var po = document.createElement('script'); po.type = 'text/javascript';
-    po.async = true;
-    po.src = 'https://apis.google.com/js/client:plusone.js?onload=render';
-    var s = document.getElementsByTagName('script')[0];
-    s.parentNode.insertBefore(po, s);
-})();
+if(!window.App) window.App = {};
 
-function signinCallback(auth){
-    if(auth['error']){
-        // show modal
-        alert("WAAAH - fail");
-        $('#loginModal').modal({
-           show: true,
-           keyboard: false
-        });
-    }else{
-        app.authentication = auth;
-        $('#loginModal').modal('hide');
-    }
-    console.log(auth);
-}
 
-function signout(){
-    $.ajax({
-        type: 'GET',
-        url: 'https://accounts.google.com/o/oauth2/revoke',
-        data: { token: app.authentication['access_token'] },
-        async: false,
-        dataType: 'jsonp',
-        success: function(rsp){
-            console.log("Succesfully signed out");
-        },
-        error: function(e){ console.log(e); }
-    });
-}
-
-function render(){
-    gapi.signin.render('signinBtn', {
-        callback: "signinCallback",
-        clientid: "489730990009-du9j5pnp4p4dahejidksq0av97nak9fr.apps.googleusercontent.com",
-        cookiepolicy: "single_host_origin",
-        requestvisibleactions: "http://schemas.google.com/AddActivity",
-        scope: "https://www.googleapis.com/auth/plus.login"
-    });
-}
 </script>
+
+<script src="js/signin.js"></script>
+<script src="js/models.js"></script>
+<script src="js/index.js"></script>
 </body>
 </html>
