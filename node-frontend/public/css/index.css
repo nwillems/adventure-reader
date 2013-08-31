@@ -1,0 +1,16 @@
+body {
+    padding-top: 60px;
+}
+.menu-slide {
+    /*background-color: #f5f5f5;*/
+}
+#feeds { 
+    /* background-color: #F00; */
+}
+#feed-pane { 
+    /* background-color: #0F0; */
+}
+.article-container{
+    border-bottom: 1px dotted #ddd;
+    margin-top: 20px;
+}
