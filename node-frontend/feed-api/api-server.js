@@ -1,69 +1,88 @@
 var restify = require('restify');
+var pg = require('pg').native;
 
-var server = restify.createServer();
+module.exports = function ApiRouter(opts, cb){
+    var server = opts.server;
 
-server.use(restify.queryParser());
-server.use(restify.bodyParser());
+    server.use(restify.queryParser());
+    server.use(restify.bodyParser({ mapParams : false }));
 
-server.get('/api/user/:userid', function(req, res, next){
-    if(!req.header('x-auth')){
-        return next(new Error("Unfortunately, you are not authorized"));
-    }
+    var db = new pg.Client(opts.connection); // create db connection
 
-    console.log("Auth info for userid: ", req.params.userid, req.header('auth'));
-    res.json(200, {
-        'msg':"Great sucess, here all your feeds will come",
-        'feeds': [
-            { 'name': 'feed0', 'id': 0 },
-            { 'name': 'feed1', 'id': 1 },
-        ]
+    server.get('/api/feeds', function(req, res, next){
+        db.query('SELECT * FROM feeds;', function(err, result){
+            if(err) return next(err);
+            res.json(200, {'feeds': result.rows});
+            return next();
+        });
     });
-    return next();
-});
 
-//PUT Updates a resource
-server.put('/api/user/:userid', function(req, res, next){
-    //TODO: Add authentication
-    if(!req.header('x-auth')){
-        return next(new Error("Unfortunately, you are not authorized"));
-    }
-    //TODO: Add reading of feed to add
-    res.json(200, {'msg': "Your feed has been added", 'feedid': 1});
-    return next();
-});
-
-// POST creates a resource
-server.post('/api/user/', function(req, res, next){
-    //TODO: Validate user information
-    res.json(201, {'auth':"FOOO", 'msg': "User has been created for your id", 'location':"/api/user/YourID"});
-    return next();
-});
-
-
-server.get('/api/feed/:feedid', function(req, res, next){
-    console.log("Incomming get for: ", req.url);
-    res.json(200, {
-        'feedinfo': { 'name': "Foo blog", 'description': "Maybe you just want a quiet blog" },
-        'articles':[
-            { 'title':"Have a nice day", 'date': 1364436310 },
-            { 'title':"Have a day", 'date': 1364436311 },
-            { 'title':"Have a ", 'date': 1364436312 },
-            { 'title':"Have ", 'date': 1364436313 },
-            { 'title':"a nice day", 'date': 1364436314 },
-            { 'title':"nice day", 'date': 1364436315 },
-            { 'title':"day", 'date': 1364436316 },
-            { 'title':"Good bye chuck", 'date': 1364436317 }
-        ]
+    server.get('/api/feeds/:feedid', function(req, res, next){
+        console.log("Incomming get for - bogus: ", req.url);
+        db.query('SELECT * FROM entries WHERE feed_id = $1 ORDER BY entry_published DESC;', 
+            [req.params.feedid], 
+            function(err, result){
+                if(err) return next(err);
+                res.json(200, {'feedinfo': {}, 'entries' : result.rows });
+                return next();
+            }
+        );
     });
-    res.end();
-    next();
-});
 
-server.get('/api', function(req, res, next){
-    res.end("This is the frontpage of API server");
-    next();
-});
+    server.get('/api', function(req, res, next){
+        res.end("This is the frontpage of API server");
+        next();
+    });
 
-server.listen(8081, function(){
-    console.log("Server listening:", server.name, server.url);
-});
+    server.get('/api/users/:userid', function(req, res, next){
+        var q = 'SELECT f.* FROM users_feeds uf'
+              + ' JOIN feeds f ON uf.feed_id_feeds = f.feed_id'
+              + ' WHERE id_users = $1 ORDER BY feed_id_feeds';
+        db.query(q, [req.params.userid], function(err, result){
+            if(err) return next(err);
+            res.json(200, { 'user_feeds': result.rows });
+        });
+    });
+
+    //Create a resource
+    server.post('/api/users', function(req, res, next){
+        var username = req.body['username'];
+        var userid = req.body['userid'];
+        var q = 'INSERT INTO users(username, user_ext_id) VALUES($1, $2)';
+
+        db.query(q, [username, userid], function(err, result){
+            if(err) return next(err);
+
+            res.json(200, result);
+        });
+    });
+
+    //Update
+    server.put('/api/users/:userid/feeds', function(req, res, next){
+        //Expect a single feed-url or id to be provided.
+        res.json(200, {res: 'Added'});
+    });
+
+    server.del('/api/users/:userid/feeds/:feedid', function(req, res, next){
+        //Delete the given feed for the given user
+        res.json(200, {res: 'Deleted'});
+    });
+
+    //Update
+    server.put('/api/users/:userid/reads/:feedid', function(req, res, next){
+        //Expect either a list or single id of an entry - to mark as read for
+        //  the given user
+        res.json(200, {res: 'Added'});
+    });
+
+    server.del('/api/users/:userid/reads/:feedid', function(req, res, next){
+        //Expect either a list or single id of an entry - to mark as unread for
+        //  the given user
+        res.json(200, {res: 'Added'});
+    });
+
+    db.connect(cb);
+
+}
+
+
