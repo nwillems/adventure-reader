@@ -42,6 +42,8 @@ ALTER TABLE "read" ADD FOREIGN KEY ("id_users") REFERENCES "users" ("id");
 -- -------------------------------------------
 -- UPDATES
 -- -------------------------------------------
+-- patch_001
+--  http://stackoverflow.com/questions/4069718/postgres-insert-if-does-not-exist-already
 ALTER TABLE "entries" ADD CONSTRAINT "uq_item_id" UNIQUE ("item_id");
 CREATE FUNCTION ignore_duplicates_entries() RETURNS Trigger
 AS $$
@@ -60,3 +62,6 @@ CREATE TRIGGER entries_ignore_duplicates
     BEFORE Insert ON entries
     FOR EACH ROW
     EXECUTE PROCEDURE ignore_duplicates_entries();
+
+-- patch_002
+ALTER TABLE "users" ADD CONSTRAINT "uq_ext_id" UNIQUE ("user_ext_id");
