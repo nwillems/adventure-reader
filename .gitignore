@@ -1,1 +1,4 @@
 node_modules
+python-backend/bin
+python-backend/lib
+python-backend/include
