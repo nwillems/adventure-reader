@@ -47,8 +47,9 @@
             <div class="span12">
                 <blockquote>
                     <p data-bind="text: entry_title">Article title</p>
-                    <small>Date of post | 
-                        <cite title="Autho">Name of author</cite>
+                    <small>
+                        <span data-bind="text: entry_published">Date of post<span> | 
+                        <cite title="Author" data-bind="text: entry_author">Name of author</cite>
                     </small>
                 </blockquote>
             </div>
