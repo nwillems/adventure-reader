@@ -64,4 +64,5 @@ CREATE TRIGGER entries_ignore_duplicates
     EXECUTE PROCEDURE ignore_duplicates_entries();
 
 -- patch_002
+ALTER TABLE "users" ALTER COLUMN "user_ext_id" TYPE bigint;
 ALTER TABLE "users" ADD CONSTRAINT "uq_ext_id" UNIQUE ("user_ext_id");
