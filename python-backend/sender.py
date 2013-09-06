@@ -42,7 +42,8 @@ def schedule_queue_feed(feed_info, scheduler):
     
     print("Scheduling feed ", feed_url);
     
-    scheduler.enter(feed_ttl, 1,
+    scheduler.enter(feed_ttl * 60, # Delay times 60
+                    1, # Priority
                     schedule_queue_feed,
                     ((feed_id, feed_url, feed_ttl), scheduler))
     
