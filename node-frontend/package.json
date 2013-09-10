@@ -10,10 +10,10 @@
   "author": "",
   "license": "BSD",
   "dependencies": {
-    "trumpet": "1.x.x",
-    "restify": "~2.3.5",
-    "filed": "0.0.7",
-    "pg": "~1.1.0",
-    "sql": "~0.12.0"
+    "trumpet": "1.6.x",
+    "restify": "~2.6.x",
+    "filed": "0.1.x",
+    "pg": ">=2.5.1",
+    "sql": ">=0.26.0"
   }
 }
