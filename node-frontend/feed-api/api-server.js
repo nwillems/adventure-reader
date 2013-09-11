@@ -1,46 +1,79 @@
 var restify = require('restify');
 var pg = require('pg').native;
 
+var Feed = require('./feed.js');
+
 module.exports = function ApiRouter(opts, cb){
     var server = opts.server;
-
     server.use(restify.queryParser());
     server.use(restify.bodyParser({ mapParams : false }));
 
     var db = new pg.Client(opts.connection); // create db connection
+    
+    var feed = new Feed({ client : db });
+
+    server.get('/api', function(req, res, next){
+        res.end("This is the frontpage of API server - here should be some documentation");
+        return next();
+    });
 
     server.get('/api/feeds', function(req, res, next){
-        db.query('SELECT * FROM feeds;', function(err, result){
+        feed.getAllFeeds(function(err, result){
             if(err) return next(err);
-            res.json(200, {'feeds': result.rows});
+
+            res.json(200, {'feeds': result});
             return next();
         });
     });
 
     server.get('/api/feeds/:feedid', function(req, res, next){
-        console.log("Incomming get for - bogus: ", req.url);
-        db.query('SELECT * FROM entries WHERE feed_id = $1 ORDER BY entry_published DESC;', 
-            [req.params.feedid], 
-            function(err, result){
-                if(err) return next(err);
-                res.json(200, {'feedinfo': {}, 'entries' : result.rows });
-                return next();
-            }
-        );
+        console.log("Incomming get for entries in feed: ", req.url);
+        feed.getEntries(req.params.feedid, function(err, result){
+            if(err) return next(err);
+            
+            res.json(200, {'feedinfo': {}, 'entries' : result });
+            return next();
+        });
     });
 
-    server.get('/api', function(req, res, next){
-        res.end("This is the frontpage of API server");
-        next();
+    server.put('/api/feeds', function(req, res, next){
+        console.log("Incomming request to add feed", req.body['url']);
+
+        function addFeed(url, callback){
+            // needs to get some sort of feed information
+            // db.query(
+            //   'INSERT INTO feeds(feed_title, feed_url, feed_ttl)'
+            // + ' VALUES (HULA BULA, HULA BULA, HULA BULA)'
+            callback();
+        }
+
+        db.query('SELECT feed_id, feed_url FROM feeds WHERE feed_url = $1', 
+            [req.body['url']], 
+            function(err, result){
+                if(err) return next(err);
+
+                if(result.rows.length > 0){
+                    res.json(200, { 'msg' : "Feed already existing", 'feed_id' : result.rows[0].feed_id });
+                    return next();
+                }
+
+                res.json(200, { 'msg' : "Feed adding", 'feed_id' : undefined });
+
+                addFeed(req.body['url'], next);
+            }
+        );
     });
 
     server.get('/api/users/:userid', function(req, res, next){
         var q = 'SELECT f.* FROM users_feeds uf'
               + ' JOIN feeds f ON uf.feed_id_feeds = f.feed_id'
-              + ' WHERE id_users = $1 ORDER BY feed_id_feeds';
+              + ' JOIN users u ON u.id = uf.id_users'
+              + ' WHERE u.user_ext_id = $1 ORDER BY feed_id_feeds;';
         db.query(q, [req.params.userid], function(err, result){
             if(err) return next(err);
+
             res.json(200, { 'user_feeds': result.rows });
+            return next();
         });
     });
 
@@ -48,24 +81,35 @@ module.exports = function ApiRouter(opts, cb){
     server.post('/api/users', function(req, res, next){
         var username = req.body['username'];
         var userid = req.body['userid'];
-        var q = 'INSERT INTO users(username, user_ext_id) VALUES($1, $2)';
+        var q = 'INSERT INTO users(username, user_ext_id) VALUES($1, $2);';
 
         db.query(q, [username, userid], function(err, result){
             if(err) return next(err);
 
             res.json(200, result);
+            return next();
         });
     });
 
     //Update
     server.put('/api/users/:userid/feeds', function(req, res, next){
         //Expect a single feed-url or id to be provided.
+        var userId = req.params.userid;
+        var feedId = req.body['feed_id'];
+        console.log("Incomming request for adding feed to user", {userid: userId, feed_id: feedId });
+
+        var q = 'INSERT INTO users_feeds(feed_id_feeds, id_users)'
+            + ' SELECT $1, u.id FROM users u'
+            + ' WHERE u.user_ext_id = $2;';
+
         res.json(200, {res: 'Added'});
+        return next();
     });
 
     server.del('/api/users/:userid/feeds/:feedid', function(req, res, next){
         //Delete the given feed for the given user
         res.json(200, {res: 'Deleted'});
+        return next();
     });
 
     //Update
@@ -73,12 +117,14 @@ module.exports = function ApiRouter(opts, cb){
         //Expect either a list or single id of an entry - to mark as read for
         //  the given user
         res.json(200, {res: 'Added'});
+        return next();
     });
 
     server.del('/api/users/:userid/reads/:feedid', function(req, res, next){
         //Expect either a list or single id of an entry - to mark as unread for
         //  the given user
         res.json(200, {res: 'Added'});
+        return next();
     });
 
     db.connect(cb);
