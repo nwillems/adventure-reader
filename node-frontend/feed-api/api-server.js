@@ -38,30 +38,27 @@ module.exports = function ApiRouter(opts, cb){
 
     server.put('/api/feeds', function(req, res, next){
         console.log("Incomming request to add feed", req.body['url']);
+        var feedUrl = req.body['url'];
 
-        function addFeed(url, callback){
-            // needs to get some sort of feed information
-            // db.query(
-            //   'INSERT INTO feeds(feed_title, feed_url, feed_ttl)'
-            // + ' VALUES (HULA BULA, HULA BULA, HULA BULA)'
-            callback();
-        }
+        feed.getByUrl(feedUrl, function(err, rows){
+            if(err) return next(err);
 
-        db.query('SELECT feed_id, feed_url FROM feeds WHERE feed_url = $1', 
-            [req.body['url']], 
-            function(err, result){
-                if(err) return next(err);
-
-                if(result.rows.length > 0){
-                    res.json(200, { 'msg' : "Feed already existing", 'feed_id' : result.rows[0].feed_id });
-                    return next();
-                }
-
-                res.json(200, { 'msg' : "Feed adding", 'feed_id' : undefined });
-
-                addFeed(req.body['url'], next);
+            if(rows.length > 0){ //Feed already exsists
+                res.json(200, { feed: rows[0] }); //expecting only one result
+                return next();
             }
-        );
+
+            feed.getFeedInfo(feedUrl, function(err, feedInfo){
+                if(err) return next(err);
+                
+                feed.insertFeed(feedInfo, function(err, info){
+                    if(err) return next(err);
+                    
+                    res.json(200, info);
+                    return next();
+                });
+            });
+        });
     });
 
     server.get('/api/users/:userid', function(req, res, next){
@@ -109,21 +106,6 @@ module.exports = function ApiRouter(opts, cb){
     server.del('/api/users/:userid/feeds/:feedid', function(req, res, next){
         //Delete the given feed for the given user
         res.json(200, {res: 'Deleted'});
-        return next();
-    });
-
-    //Update
-    server.put('/api/users/:userid/reads/:feedid', function(req, res, next){
-        //Expect either a list or single id of an entry - to mark as read for
-        //  the given user
-        res.json(200, {res: 'Added'});
-        return next();
-    });
-
-    server.del('/api/users/:userid/reads/:feedid', function(req, res, next){
-        //Expect either a list or single id of an entry - to mark as unread for
-        //  the given user
-        res.json(200, {res: 'Added'});
         return next();
     });
 

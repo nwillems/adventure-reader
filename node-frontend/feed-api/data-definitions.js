@@ -1,5 +1,7 @@
 var sql = require('sql');
 
+// exports.DEFAULT = sql
+
 exports.feed = sql.define({
 	name: 'feeds',
 	columns: [

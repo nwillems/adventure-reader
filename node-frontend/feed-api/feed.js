@@ -1,7 +1,7 @@
 
 var model = require('./data-definitions');
 var request = require('request');
-var feedparser = require('feedparser');
+var FeedParser = require('feedparser');
 
 var feed = model.feed;
 var entries = model.entries, entry = model.entry;
@@ -105,13 +105,14 @@ Feed.prototype.getEntries = function(id, callback){
 function isContentTypeFeed(contentType){
     var types = [
           'application/rss+xml'
+        , 'application/xml'
         , 'application/atom+xml'
         , 'application/rdf+xml'
         , 'text/xml'
     ]
 
-    for(var type in types)
-        if(type === contentType) return true;
+    for(var i in types)
+        if(contentType.slice(0, types[i].length) == types[i]) return true;
     return false;
 }
 
@@ -122,6 +123,9 @@ Feed.prototype.getFeedInfo = function(feedUrl, callback){
             .on('meta', function onMeta(meta){
                 var ttl = 60;
                 if(meta['#type'] === 'rss') ttl = meta['rss:ttl'] || ttl;
+                
+                // HACK feedparser not returning nice
+                if(ttl && (typeof ttl == "object")) ttl = ttl['#']; 
 
                 return callback(null, { url : url, title: meta.title, ttl : ttl });
             }).on('error', function(err){ 
@@ -146,19 +150,20 @@ Feed.prototype.getFeedInfo = function(feedUrl, callback){
     });
 }
 
-Feed.prototype._insertFeed = function(feedInfo, callback){
+Feed.prototype.insertFeed = function(feedInfo, callback){
     var self = this;
     var query = feed.insert(
         feed.title.value(feedInfo.title),
         feed.url.value(feedInfo.url),
-        feed.ttl.value(feedInfo.ttl)
-    ).toQuery();
+        feed.ttl.value(feedInfo.ttl),
+        feed.id,
+    ).returning(feed.id).toQuery();
 
     var q = self.db.query(query.text, query.values, function(err, result){
         if(err) return callback(err);
 
         var affected = result.rowCount;
 
-        return callback(null, {'msg': 'Added new feed', 'affected': affected, 'feedInfo': feedInfo });
+        return callback(null, {'msg': 'Added new feed', 'affected': affected, 'feedInfo': feedInfo, 'debug': result });
     });
 }
